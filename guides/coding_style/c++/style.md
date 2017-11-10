@@ -40,6 +40,32 @@ Including Header Files
 ===
 When including header files, only include files that are _portable_ across all compilers (Unless where applicable). Do not include `<bits/stdc++.h>`.
 
+Pay attention to whether the header is _not in use_, and do not include it if so. If only the implementation uses it, then include the file in .cpp, not .hpp.
+
+**Valid**
+```C++
+// sample1.hpp
+#include <vector>       // ok, return type is vector
+
+template<typename Ty>
+std::vector<Ty> toVector(Ty t[], size_t sz);
+
+
+// sample2.hpp
+class ListHelp {
+    void sort();
+}
+
+// sample2.cpp
+#include "sample2.hpp"
+#include <utility>      // ok, only use the swap function in implementation
+using namespace std;
+
+void ListHelp::sort() {
+    // use the swap function
+}
+```
+
 Comments
 ===
 Single line comments should use the standard style (`//`), and multi line comments should use multiline comments (`/* */`). There should be a space between the comment delimiter and the comment text (unless pure-code synopsis).
@@ -68,6 +94,37 @@ public:
     typedef Allocator                                allocator_type;
 }
 */
+```
+
+Namespaces
+===
+When using namespace, pay attention to name collisions/name conflicts:
+
+In header files, do NOT use `using` directive or declaration.
+
+**Valid**
+```C++
+// sample1.hpp
+#include <vector>
+
+// ok, if users include this file, they also need declare std namespace to use member of vector
+template<typename Ty>
+std::vector<Ty> toVector(Ty t[], size_t sz);
+
+
+// sample2.hpp
+class ListHelp {
+    void sort();
+}
+
+// sample2.cpp
+#include "sample2.hpp"
+#include <utility>
+using namespace std;    // ok, users will include .hpp not .cpp
+
+void ListHelp::sort() {
+    // may use the swap function
+}
 ```
 
 Macros
@@ -270,6 +327,8 @@ Naming
 
 Enumerations should be named like user-defined types with PascalCase. The actual enumerators inside should be named using all caps and underscore separation.
 
+Warning: if you dealing with low-level operation, and need use explicit type convertion, you must be careful about underlying type (default is the `int` it at least 2-bytes).
+
 **Valid:**
 ```C++
 enum class ExampleEnum
@@ -279,4 +338,49 @@ enum class ExampleEnum
     THREE,
     FOUR // No comma at the end
 };
+
+enum class ExampleEnum : long
+{
+    ONE = 0,
+    TWO_TWO,
+    THREE,
+    FOUR // No comma at the end
+};
+```
+
+Alias
+===
+
+using vs typedef
+---
+When dealing with aliases, use `using`, not `typedef`.
+
+Don't put alias in `public`, unless the aliases is guaranteed to always be the same as the type it's currently aliased to.
+
+- The `using` declaration can be read almost as an English sentence.
+
+- More easily declare an alias with template.
+
+- [See more comparisons](http://www.stroustrup.com/C++11FAQ.html#template-alias)
+
+Naming
+---
+
+Aliases should be named like PascalCase.
+
+**Valid:**
+```C++
+class Demo
+{
+private:
+   using VecI = std::vector<int>;
+   // ... 
+};
+
+void foo()
+{
+   template<typename _T>
+   using VecTwo = std::vector<std::vector<_T>>;
+   // ...
+}
 ```
